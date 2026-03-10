@@ -9,14 +9,29 @@ import {
 
 // Register
 export const register = asyncHandler(async (req, res, next) => {
+  const emailRegex = /^\S+@\S+\.\S+$/;
+  const phoneRegex = /^\+?[1-9]\d{9,14}$/;
   const { phone, email, password } = req.body;
+    
+  if (!email) return next(new AppError("Email is required", 400));
+  if (!phone) return next(new AppError("Phone is required", 400));
+  if (!password) return next(new AppError("Password is required", 400));
+
+  if (email && !emailRegex.test(email)) {
+    return next(new AppError("Please enter a valid email", 400));
+  }
+
+  if (phone && !phoneRegex.test(phone)) {
+    return next(new AppError("Please enter a valid phone number", 400));
+  }
 
   const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
+
   if (existingUser) {
-    if (existingUser.email === email)
+    if (email && existingUser.email === email)
       return next(new AppError("Email already exists", 400));
-    if (existingUser.phone === phone)
-      return next(new AppError("Phone alredy exists", 400));
+    if (phone && existingUser.phone === phone)
+      return next(new AppError("Phone already exists", 400));
   }
 
   const user = await User.create({ phone, email, password });

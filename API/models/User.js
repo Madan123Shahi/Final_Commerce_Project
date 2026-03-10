@@ -5,14 +5,13 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
       trim: true,
       maxlength: [50, "Name cannot exceed 50 characters"],
     },
     email: {
       type: String,
       unique: true,
-      sparse: true,
+      required: true,
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
@@ -21,7 +20,7 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       unique: true,
-      sparse: true,
+      required: true,
       trim: true,
       match: [/^\+?[1-9]\d{9,14}$/, "Please enter a valid phone number"],
     },
@@ -34,8 +33,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["customer", "admin", "seller"],
-      default: "customer",
+      enum: ["user", "admin", "seller"],
+      default: "user",
     },
     isEmailVerified: {
       type: Boolean,
@@ -58,24 +57,21 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-userSchema.pre("validate", function (next) {
+userSchema.pre("validate", async function () {
   if (!this.email && !this.phone) {
-    return next(new Error("Either email or phone is required"));
+    throw new Error("Either email or phone is required");
   }
-  next();
 });
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   // only hash if password was modified
-  if (!this.isModified("password")) return next();
+  if (!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 12);
-  next();
 });
 
-userSchema.pre("save", function (next) {
-  if (!this.isModified("password") || this.isNew) return next();
+userSchema.pre("save", async function () {
+  if (!this.isModified("password") || this.isNew) return;
   this.passwordChangedAt = Date.now() - 1000;
-  next();
 });
 
 userSchema.methods.comparePassword = async function (enteredPassword) {

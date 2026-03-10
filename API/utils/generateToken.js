@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import RefreshToken from "../models/RefreshToken.js";
 import env from "../config/env.js";
+import crypto from "crypto";
 
 const TOKEN_CONFIG = {
   access: {
