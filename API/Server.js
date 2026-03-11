@@ -1,6 +1,7 @@
 import express from "express";
 import connectDB from "./config/db.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import env from "./config/env.js";
 import authRoutes from "./routes/auth.routes.js";
 import { errorHandler, notFound } from "./middlewares/error.middleware.js";
@@ -11,6 +12,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // needed to read req.cookies
+
+app.use(
+  cors({
+    origin: env.CLIENT_URL,
+    credentials: true,
+  }),
+);
 
 // Routes
 app.use("/api/auth", authRoutes);
