@@ -20,37 +20,16 @@ export default function RegistrationForm() {
   ];
 
   return (
-    <div
-      className="min-h-screen flex flex-center relative overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(135deg, #00c6a7 0%, #0080ff 50%, #4fc3f7 100%)",
-      }}
-    >
+    <div className="min-h-screen flex flex-center relative overflow-hidden bg-gradient-to-br from-[#00c6a7] via-[#0080ff] to-[#4fc3f7]">
       {/* Decorative blobs */}
-      <div
-        className="absolute top-0 left-0 w-80 h-80 rounded-full opacity-30"
-        style={{
-          background: "radial-gradient(circle, #00e5ff, transparent)",
-          transform: "translate(-30%, -30%)",
-        }}
-      />
+      <div className="absolute top-0 left-0 w-80 h-80 rounded-full opacity-30 bg-[radial-gradient(circle,#00e5ff,transparent)] -translate-x-[30%] -translate-y-[30%]" />
 
-      <div
-        className="absolute bottom-0 right-0 w-96 h-96 rounded-full opacity-20"
-        style={{
-          background: "radial-gradient(circle, #0057ff, transparent)",
-          transform: "translate(30%, 30%)",
-        }}
-      />
+      <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full opacity-20 bg-[radial-gradient(circle, #0057ff, transparent)] traslate-x-[30%] translate-y-[30%]" />
 
       {/* Card */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 px-10 py-10">
         {/* Title */}
-        <h1
-          className="text-center text-2xl font-bold mb-8 tracking-wide"
-          style={{ color: "#0057c8" }}
-        >
+        <h1 className="text-center text-2xl font-bold mb-8 tracking-wide text-[#0057c8]">
           <span className="text-cyan-400 mr-2">·</span>
           Create Account
           <span className="text-cyan-400 ml-2">·</span>
