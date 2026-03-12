@@ -6,6 +6,9 @@ const env = cleanEnv(process.env, {
   JWT_SECRET: str(),
   JWT_REFRESH_SECRET: str(),
   CLIENT_URL: str(),
+  EMAIL_USER: str(),
+  EMAIL_PASSWORD: str(),
+  OTP_SECRET: str(),
   NODE_ENV: str({ choices: ["development", "production"] }),
 });
 

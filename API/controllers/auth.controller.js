@@ -1,4 +1,6 @@
+import crypto from "crypto";
 import User from "../models/User.js";
+import OTP from "../models/OTP.js";
 import RefreshToken from "../models/RefreshToken.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -6,13 +8,15 @@ import {
   generateAccessToken,
   sendTokenResponse,
 } from "../utils/generateToken.js";
+import { generateOTP } from "../utils/generateOTP.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 // Register
 export const register = asyncHandler(async (req, res, next) => {
   const emailRegex = /^\S+@\S+\.\S+$/;
   const phoneRegex = /^\+?[1-9]\d{9,14}$/;
   const { phone, email, password } = req.body;
-    
+
   if (!email) return next(new AppError("Email is required", 400));
   if (!phone) return next(new AppError("Phone is required", 400));
   if (!password) return next(new AppError("Password is required", 400));
@@ -33,6 +37,14 @@ export const register = asyncHandler(async (req, res, next) => {
     if (phone && existingUser.phone === phone)
       return next(new AppError("Phone already exists", 400));
   }
+
+  const emailOTP = generateOTP();
+  const hashedEmailOTP = crypto
+    .createHmac("sha256", env.OTP_SECRET)
+    .update(emailOTP)
+    .digest("hex");
+
+  await OTP.create({});
 
   const user = await User.create({ phone, email, password });
   await sendTokenResponse(user, 201, req, res);

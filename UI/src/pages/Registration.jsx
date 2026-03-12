@@ -17,11 +17,42 @@ export default function RegistrationForm() {
     password: "",
   });
 
+  // OTP state
+  const [emailOtp, setEmailOtp] = useState("");
+  const [phoneOtp, setPhoneOtp] = useState("");
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [otpLoading, setOtpLoading] = useState("");
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: "" });
+    let value = e.target.value;
+    const { name } = e.target;
+
+    if (name === "phone") {
+      value = value.replace(/\D/g, "").slice(0, 10);
     }
+
+    setForm({ ...form, [name]: value });
+
+    // Live validation while typing
+    let error = "";
+    if (name === "email") {
+      if (!value) error = "Email is required";
+      else if (!/\S+@\S+\.\S+/.test(value)) error = "Enter a valid email";
+    }
+    if (name === "phone") {
+      if (!value) error = "Phone is required";
+      else if (value.length < 10) error = "10 digit number is required";
+    }
+    if (name === "password") {
+      if (!value) error = "Password is required";
+      else if (value.length < 6)
+        error = "Password must be at least 6 characters";
+    }
+
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   useEffect(() => {
@@ -147,6 +178,8 @@ export default function RegistrationForm() {
                             : "password"
                           : field.type
                       }
+                      inputMode={field.name === "phone" ? "numeric" : undefined}
+                      maxLength={field.name === "phone" ? 10 : undefined}
                       value={form[field.name]}
                       onChange={handleChange}
                       onFocus={() => setFocused(field.name)}
