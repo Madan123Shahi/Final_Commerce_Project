@@ -1,244 +1,113 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import api from "../api/axios";
+import { Shield, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
-export default function RegistrationForm() {
-  const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [success, setSuccess] = useState(false);
-  const [focused, setFocused] = useState("");
-
-  const [form, setForm] = useState({
-    email: "",
-    phone: "",
-    password: "",
-  });
-
-  // OTP state
-  const [emailOtp, setEmailOtp] = useState("");
-  const [phoneOtp, setPhoneOtp] = useState("");
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [otpLoading, setOtpLoading] = useState("");
-
-  const handleChange = (e) => {
-    let value = e.target.value;
-    const { name } = e.target;
-
-    if (name === "phone") {
-      value = value.replace(/\D/g, "").slice(0, 10);
-    }
-
-    setForm({ ...form, [name]: value });
-
-    // Live validation while typing
-    let error = "";
-    if (name === "email") {
-      if (!value) error = "Email is required";
-      else if (!/\S+@\S+\.\S+/.test(value)) error = "Enter a valid email";
-    }
-    if (name === "phone") {
-      if (!value) error = "Phone is required";
-      else if (value.length < 10) error = "10 digit number is required";
-    }
-    if (name === "password") {
-      if (!value) error = "Password is required";
-      else if (value.length < 6)
-        error = "Password must be at least 6 characters";
-    }
-
-    setErrors((prev) => ({ ...prev, [name]: error }));
-  };
-
-  useEffect(() => {
-    if (errors.api) {
-      const timer = setTimeout(() => setErrors({}), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [errors.api]);
-
-  const validate = () => {
-    const newErrors = {};
-    if (!form.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email))
-      newErrors.email = "Enter a valid email";
-    if (!form.phone) newErrors.phone = "Phone is required";
-    else if (!/^\d{10}$/.test(form.phone))
-      newErrors.phone = "Enter a valid 10-digit phone number";
-    if (!form.password) newErrors.password = "Password is required";
-    else if (form.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-    return newErrors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-    setLoading(true);
-    try {
-      await api.post("/register", form);
-      setSuccess(true);
-      setForm({ email: "", phone: "", password: "" });
-      navigate("/login");
-    } catch (error) {
-      const message =
-        error.response?.data?.message || "Network error. Please try again.";
-      setErrors({ api: message });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fields = [
-    { name: "email", label: "Email address", required: true, type: "email" },
-    { name: "phone", label: "Phone", required: true, type: "tel" },
-    { name: "password", label: "Password", required: true, type: "password" },
+const Registration = () => {
+  const steps = [
+    { id: 0, label: "Details" },
+    { id: 1, label: "Phone" },
+    { id: 2, label: "Email" },
   ];
 
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[#00c6a7] via-[#0080ff] to-[#4fc3f7]">
-      <div className="absolute top-0 left-0 w-80 h-80 rounded-full opacity-30 bg-[radial-gradient(circle,#00e5ff,transparent)] -translate-x-[30%] -translate-y-[30%]" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full opacity-20 bg-[radial-gradient(circle,#0057ff,transparent)] translate-x-[30%] translate-y-[30%]" />
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="bg-white flex flex-col items-center p-10 rounded-2xl">
+        {/* Icon */}
+        <div className="bg-green-500 p-2 rounded-xl">
+          <Shield className="text-white w-8 h-8" />
+        </div>
 
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 px-10 py-10">
-        <h1 className="text-center text-2xl font-bold mb-8 tracking-wide text-[#0057c8]">
-          <span className="text-cyan-400 mr-2">·</span>
-          Create Account
-          <span className="text-cyan-400 ml-2">·</span>
-        </h1>
+        {/* Heading */}
+        <h1 className="text-2xl mt-4">Create Account</h1>
+        <p className="text-gray-400 text-sm">
+          Verified, secure sign-up in 3 steps
+        </p>
 
-        {success && (
-          <div className="mb-5 p-3 rounded-md bg-green-50 border border-green-200 text-green-600 text-sm text-center">
-            Account created successfully!
-          </div>
-        )}
-
-        {errors.api && (
-          <div className="mb-5 p-3 rounded-md bg-red-50 border border-red-200 text-red-500 text-sm text-center">
-            {errors.api}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          {fields.map((field) => {
-            const isFocused = focused === field.name;
-            const hasValue = form[field.name] !== "";
-            const hasError = !!errors[field.name];
-
-            return (
-              <div key={field.name} className="mb-5 relative">
-                {field.required && (
-                  <span className="absolute -left-4 top-1/2 -translate-y-1/2 text-cyan-500 font-bold">
-                    ·
-                  </span>
-                )}
-                {/* Floating Label Input */}
-                <div
-                  className={`relative rounded-lg border-2 transition-all duration-200 bg-gray-50 ${
-                    hasError
-                      ? "border-red-400 bg-red-50"
-                      : isFocused
-                        ? "border-cyan-400 bg-white shadow-sm shadow-cyan-100"
-                        : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  {/* Floating Label */}
-                  <label
-                    className={`absolute left-3 transition-all duration-200 pointer-events-none ${
-                      isFocused || hasValue
-                        ? "top-1 text-[10px] font-semibold"
-                        : "top-1/2 -translate-y-1/2 text-sm"
-                    } ${
-                      hasError
-                        ? "text-red-400"
-                        : isFocused
-                          ? "text-cyan-500"
-                          : "text-gray-400"
-                    }`}
-                  >
-                    {field.label}
-                  </label>
-
-                  <div className="flex items-center">
-                    <input
-                      name={field.name}
-                      type={
-                        field.name === "password"
-                          ? showPassword
-                            ? "text"
-                            : "password"
-                          : field.type
-                      }
-                      inputMode={field.name === "phone" ? "numeric" : undefined}
-                      maxLength={field.name === "phone" ? 10 : undefined}
-                      value={form[field.name]}
-                      onChange={handleChange}
-                      onFocus={() => setFocused(field.name)}
-                      onBlur={() => setFocused("")}
-                      className="flex-1 outline-none pt-5 pb-2 px-3 text-gray-700 text-sm bg-transparent rounded-lg"
-                    />
-
-                    {field.name === "password" && (
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="pr-3 text-gray-400 hover:text-cyan-500 transition-colors"
-                      >
-                        {showPassword ? (
-                          <EyeOff size={18} />
-                        ) : (
-                          <Eye size={18} />
-                        )}
-                      </button>
-                    )}
-                  </div>
+        {/* Steps */}
+        <div className="flex mt-4">
+          {steps.map((step, index) => (
+            <div className="flex items-center" key={step.id}>
+              <div className="flex flex-col items-center">
+                <div className="rounded-full border-2 border-green-500 w-8 h-8 flex items-center justify-center text-green-500 text-sm font-medium">
+                  {step.id + 1}
                 </div>
-
-                {/* Field Error */}
-                {hasError && (
-                  <p className="text-red-400 text-xs mt-1 ml-1">
-                    {errors[field.name]}
-                  </p>
-                )}
+                <p className="text-xs mt-1 text-gray-500">{step.label}</p>
               </div>
-            );
-          })}
+              {index < steps.length - 1 && (
+                <div className="h-[2px] w-16 bg-gray-300 mx-2 mb-4" />
+              )}
+            </div>
+          ))}
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-lg text-white font-bold tracking-widest text-sm transition-all hover:opacity-90 hover:shadow-lg hover:shadow-cyan-200 active:scale-95 bg-gradient-to-r from-[#00b4d8] to-[#0077e6] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                REGISTERING...
-              </>
-            ) : (
-              "REGISTER"
-            )}
-          </button>
-        </form>
+        {/* Phone Number */}
+        <div className="flex flex-col w-full mt-4 gap-2">
+          <label className="text-sm font-medium">Phone Number</label>
+          <div className="relative flex items-center">
+            <Phone className="absolute left-3 w-4 h-4 text-gray-400" />
+            <input
+              className="border-2 border-gray-200 rounded-md w-full py-1 pl-9 placeholder:text-gray-400 text-sm text-gray-400 outline-none focus:border-green-400"
+              placeholder="10-digit mobile number"
+            />
+          </div>
+        </div>
 
-        <p className="text-center text-gray-500 text-sm mt-4">
+        {/* Email */}
+        <div className="flex flex-col w-full mt-3 gap-2">
+          <label className="text-sm font-medium">Email</label>
+          <div className="relative flex items-center">
+            <Mail className="absolute left-3 w-4 h-4 text-gray-400" />
+            <input
+              className="border-2 border-gray-200 rounded-md w-full py-1 pl-9 placeholder:text-gray-400 text-sm text-gray-400 outline-none focus:border-green-400"
+              placeholder="you@example.com"
+            />
+          </div>
+        </div>
+
+        {/* Password */}
+        <div className="flex flex-col w-full mt-3 gap-2">
+          <label className="text-sm font-medium">Password</label>
+          <div className="relative flex items-center">
+            <Lock className="absolute left-3 w-4 h-4 text-gray-400" />
+            <input
+              type={showPassword ? "text" : "password"}
+              className="border-2 border-gray-200 rounded-md w-full py-1 pl-9 pr-9 placeholder:text-gray-400 text-sm text-gray-400 outline-none focus:border-green-400"
+              placeholder="minimum 8 characters"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 cursor-pointer"
+            >
+              {showPassword ? (
+                <EyeOff className="w-4 h-4 text-gray-400" />
+              ) : (
+                <Eye className="w-4 h-4 text-gray-400" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <button className="w-full mt-6 bg-green-500 text-white py-2 rounded-md text-sm font-medium hover:bg-green-600 transition-colors">
+          Create Account
+        </button>
+
+        {/* Login Link */}
+        <p className="text-sm text-gray-400 mt-3">
           Already have an account?{" "}
-          <a
-            href="#"
-            className="text-cyan-500 hover:text-cyan-700 font-medium transition-colors"
+          <Link
+            to="/login"
+            className="text-green-500 cursor-pointer hover:underline"
           >
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>
   );
-}
+};
+
+export default Registration;
